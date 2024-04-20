@@ -29,13 +29,70 @@
     <div class="content">
         <img src="/chiawu-portfolio-starbucks-posters-04.jpg" alt="">
     </div>
-    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js" integrity="sha512-jEnuDt6jfecCjthQAJ+ed0MTVA++5ZKmlUcmDGBv2vUI/REn6FuIdixLNnQT+vKusE2hhTk2is3cFvv5wA+Sgg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js" integrity="sha512-jEnuDt6jfecCjthQAJ+ed0MTVA++5ZKmlUcmDGBv2vUI/REn6FuIdixLNnQT+vKusE2hhTk2is3cFvv5wA+Sgg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" integrity="sha512-onMTRKJBKz8M1TnqqDuGBlowlH0ohFzMXYRNebz+yOcc5TQr/zAKsthzhuv0hiyUKEiQEQXEynnXCvNTOk50dg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" integrity="sha512-7eHRwcbYkK4d9g/6tD/mhkf++eoTHwpNM9woBxtPUBWm67zeAfFC+HrdoE2GanKeocly/VxeLvIqwvCdk7qScg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script>
-        // document.addEventListener("DOMContentLoaded", function() {
-        //     let lottieContainer = document.querySelector(".end-lottie");
-        // },
+        document.addEventListener("DOMContentLoaded", function() {
+            let lottieContainer = document.querySelector(".animation");
+
+            if (lottieContainer) {
+                LottieScrollTrigger({
+                    trigger: ".animation",
+                    start: "top center",
+                    endTrigger: ".end-lottie",
+                    end: `bottom center+${document.querySelector(".animation").offsetHeight}`,
+                    renderer: "svg",
+                    target: ".animation",
+                    path: "./hero.json",
+                    scrub: 3
+                });
+            }
+        });
+
+        function LottieScrollTrigger(vars) {
+            let playHead = {frame :0};
+            target = gsap.utils.toArray(vars.target)[0];
+            speeds = {slow : "+=1000", medium : "+=2000", fast : "=1000"};
+            st = {
+                trigger : ".trigger",
+                end: speeds[vars.speed] || "+=1000",
+                scrub: 1,
+                markers: false,
+            },
+            ctx = gsap.content && gsap.context(),
+            animation = lottie.loadAnimation({
+                container: target,
+                renderer: vars.renderer || "svg",
+                loop: false,
+                autoplay: false,
+                path: vars.path,
+                rendererSettings: vars.rendererSettings || {
+                    preserveAspectRatio: "xMidYMid slice",
+                }
+            });
+
+            for (let key in vars) {
+                st[key] = vars[key];
+            }
+
+            animation.addEventListener("DOMLoaded", function () {
+                let createTween = function () {
+                    animation.frameTween = gsap.to(playHead, {
+                        frame: animation.totalFrames - 1,
+                        ease: "none",
+                        onUpdate: () => {
+                            animation.goToAndStop(playHead.frame, true);
+                        },
+                        scrollTrigger: st,
+                    });
+                    return () => animation.frameTween.kill();
+                };
+                ctx && ctx.add ? ctx.add(createTween) : createTween();
+            });
+            return animation;
+        }
 
         ScrollTrigger.create({
             animation: gsap.from(".logo", {
@@ -49,17 +106,6 @@
             endTrigger: ".content",
             end: "top center",
         }),
-
-        // LottieScrollTrigger.create({
-        //     animationData: "/data.json",
-        //     container: ".content",
-        //     loop: true,
-        //     scrub: true,
-        //     trigger: ".content",
-        //     start: "top bottom",
-        //     endTrigger: ".content",
-        //     end: "top center",
-        // });
 
         window.addEventListener("scroll", function() {
             var nav = document.querySelector(".nav");
